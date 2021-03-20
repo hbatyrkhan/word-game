@@ -1,0 +1,89 @@
+/* Styling for the leaderboard page */
+.board{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    background-color: rgb(243, 240, 240);
+}
+
+.boardRow{
+    display: flex;
+    flex-direction: row;
+    margin: 5px;
+}
+
+.boardRow:first-child{
+    margin-top: 10px;
+}
+
+.board-icon{
+    width: 80px;
+    height: 80px;
+    margin-right: 5px;
+}
+
+.rankIndex{
+    box-shadow: 1px 1px 1px rgb(63, 63, 63);
+    margin: 4px;
+    background-color: white;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(11, 11, 199);
+    font-family: 'Roboto Mono', monospace;
+}
+
+.rankName{
+    box-shadow: 1px 1px 1px rgb(63, 63, 63);
+    margin: 4px;
+    width: 150px;
+    height: 40px;
+    display: flex;
+    background-color: white;
+    justify-content: center;
+    align-items: center;
+    color: rgb(11, 11, 199);
+    font-family: 'Roboto Mono', monospace;
+}
+
+.rankScore{
+    box-shadow: 1px 1px 1px rgb(63, 63, 63);
+    margin: 4px;
+    width: 50px;
+    height: 40px;
+    display: flex;
+    background-color: white;
+    justify-content: center;
+    align-items: center;
+    color: rgb(11, 11, 199);
+    font-family: 'Roboto Mono', monospace;
+}
+
+.iconWrapper{
+    display: flex;
+    flex-direction: row-reverse;
+    margin-bottom: 20px;
+    background-color: white;
+    border-bottom: 1px solid rgb(140,140,140);
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.board-header{
+    margin-left: 5px;
+    font-family: 'Fascinate', cursive;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    color: rgb(34, 34, 34);
+}
+
+.categoryChanger{
+    margin-bottom: 20px;
+}

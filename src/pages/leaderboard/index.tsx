@@ -1,90 +1,83 @@
-import { useEffect, useRef, useState } from "react";
-import aituBridge from "@btsd/aitu-bridge";
-import {
-  IonCard,
-  IonContent,
-  IonCardContent
-} from "@ionic/react";
+import { useEffect, useState } from "react";
+import BoardRow from "./BoardRow";
+import iconWrapper from "./iconWrapper";
+import {firebase_app} from "../../config"
 
-import "../../App.css";
-
-/* Core CSS required for Ionic components to work properly */
-import "@ionic/react/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
-import "@ionic/react/css/normalize.css";
-import "@ionic/react/css/structure.css";
-import "@ionic/react/css/typography.css";
-
-/* Optional CSS utils that can be commented out */
-import "@ionic/react/css/padding.css";
-import "@ionic/react/css/float-elements.css";
-import "@ionic/react/css/text-alignment.css";
-import "@ionic/react/css/text-transformation.css";
-import "@ionic/react/css/flex-utils.css";
-import "@ionic/react/css/display.css";
-
-/* Theme variables */
-import "../../theme/variables.css";
-
-interface ISlideContentProps {
-  title: string;
-  onClick: () => void;
-  description: string;
-  buttonTitle: string;
-  imgSrc: string;
+function compareRows(a:{name: string, score: number}, b:{name: string, score: number}){
+  if (a.score === b.score)
+    return a.name.localeCompare(b.name);
+  return a.score - b.score;
 }
 
-const Leaderboard: React.FC = () => {
-  // Optional parameters to pass to the swiper instance.
-  // See http://idangero.us/swiper/api/ for valid options.
-  const slideOpts = {
-    initialSlide: 0,
-    speed: 400,
-  };
-  const slider = useRef<HTMLIonSlidesElement>(null);
+let general:any = [];
+let science:any = [];
+let pop:any = [];
+let generalEls:any = [];
+let scienceEls:any = [];
+let popEls:any = [];
 
-  async function getMe() {
-    try {
-      const data = await aituBridge.getMe();
-      setName(data.name);
-    } catch (e) {
-      // handle error
-      console.log(e);
-    }
-  }
+const loadFirebase = async () => {
+  const db = firebase_app.firestore();
+  return db.collection('users_aitu')
+    .get()
+    .then(querySnapshot => {
+      const documents = querySnapshot.docs.map(doc => doc.data())
+      for (let i = 0; i<documents.length; i++){
+        const categories = documents[i].categories;
+        const username = documents[i].username;
+        for (let i = 0; i<categories.length; i++){
+          const obj = categories[i];
+          if (obj.category === "general")
+            general.push({name: username, score: obj.score});
+          else if (obj.category === "science")
+            science.push({name: username, score: obj.score});
+          else if (obj.category === "popculture")
+            pop.push({name: username, score: obj.score});
+        }
+      }
+      general.sort(compareRows); general.reverse(compareRows);
+      science.sort(compareRows); science.reverse(compareRows);
+      pop.sort(); pop.reverse();
+      for (let i=0; i<general.length; i++)
+        generalEls.push(BoardRow(general[i].name, i+1, general[i].score));
+      for (let i=0; i<science.length; i++)
+        scienceEls.push(BoardRow(science[i].name, i+1, science[i].score));
+      for (let i=0; i<pop.length; i++)
+        popEls.push(BoardRow(pop[i].name, i+1, pop[i].score));
+      console.log(generalEls)
+      return generalEls;
+    })
+}
+
+const Leaderboard = () => {
+
+  const [rowElements, setRowElements] = useState([]);
 
   useEffect(() => {
-    if (aituBridge.isSupported()) {
-      getMe();
-    }
+    loadFirebase().then((res) => {setRowElements(res); console.log(res)});
   }, []);
 
-  const [name, setName] = useState("<username>");
+  const resetEls = (sel:string) => {
+    if (sel === "general")
+      setRowElements(generalEls);
+    else if (sel === "science")
+      setRowElements(scienceEls);
+    else
+      setRowElements(popEls);
+  }
 
-  const handleButtonClick = () => {
-    slider.current?.slideNext();
-  };
-  const items = [{
-    text: "Top 1"
-  },
-  {
-    text: "Top 2"
-  },
-  {
-    text: "Top 3"
-  }];
+  const iconWr = iconWrapper();
   return (
-    <IonContent>
-      <IonCard>
-        {items.map((item, i: number) => {
-          return <IonCardContent key={`${i}`}>
-            {i + '. ' + item.text}
-          </IonCardContent>
-        })}
-      </IonCard>
-    </IonContent>
-  );
-};
+    <div className = "board">
+      {iconWr}
+      <select id = "changer" className = "category-changer" onChange = {(e) => {
+        resetEls(e.target.value)}}>
+        <option value="general" className = "category-button">Общий</option>
+        <option value="science" className = "category-button">Наука</option>
+        <option value="popculture" className = "category-button">Поп-культура</option>
+      </select>
+      {rowElements}</div>
+    )
+}
 
 export default Leaderboard;
