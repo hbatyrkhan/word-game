@@ -31,7 +31,7 @@ import "@ionic/react/css/display.css";
 
 /* Theme variables */
 import "./theme/variables.css";
-import Announcements from "./pages/announcements";
+import Announcements from "./pages/announcements/index.js";
 
 interface ISlideContentProps {
   title: string;
