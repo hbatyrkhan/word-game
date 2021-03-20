@@ -104,8 +104,8 @@ const App: React.FC = () => {
       <IonRouterOutlet>
         <Router>
           <Route path="/ranking" component={Leaderboard} exact={true} />
-          <Route exact path="/" component={Announcements} render={() => <Redirect to="/" />} />
-          <Route exact path="/announcements" render={() => <Redirect to="/" />} />
+          <Route exact path="/game/:category" component={Announcements} render={() => <Redirect to="/" />} />
+          <Route exact path="/" render={() => <Redirect to="/game/general" />} />
         </Router>
       </IonRouterOutlet>
     </IonApp>

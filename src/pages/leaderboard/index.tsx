@@ -79,7 +79,7 @@ const Leaderboard: React.FC = () => {
       <IonCard>
         {items.map((item, i: number) => {
           return <IonCardContent key={`${i}`}>
-            {i + ' ' + item.text}
+            {i + '. ' + item.text}
           </IonCardContent>
         })}
       </IonCard>
