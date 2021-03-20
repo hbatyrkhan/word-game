@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import aituBridge from "@btsd/aitu-bridge";
 import {
-  IonApp,
-  IonRouterOutlet,
+  IonSlides,
+  IonSlide,
+  IonContent,
   IonButton,
-  IonText
+  IonText,
+  IonNote
 } from "@ionic/react";
 
-import { Route, Redirect, BrowserRouter as Router } from "react-router-dom";
-
-import Leaderboard from "./pages/leaderboard";
-
-import "./App.css";
+import "../../App.css";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -30,8 +28,7 @@ import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 
 /* Theme variables */
-import "./theme/variables.css";
-import Announcements from "./pages/announcements";
+import "../../theme/variables.css";
 
 interface ISlideContentProps {
   title: string;
@@ -67,8 +64,13 @@ const SlideContent: React.FC<ISlideContentProps> = ({
     </>
   );
 };
-
-const App: React.FC = () => {
+const pics = [
+  "/assets/slide1.png",
+  "/assets/slide2.png",
+  "/assets/slide3.png",
+  "/assets/slide4.png"
+]
+const Announcements: React.FC = () => {
   // Optional parameters to pass to the swiper instance.
   // See http://idangero.us/swiper/api/ for valid options.
   const slideOpts = {
@@ -76,6 +78,7 @@ const App: React.FC = () => {
     speed: 400,
   };
   const slider = useRef<HTMLIonSlidesElement>(null);
+  const [score, setScore] = useState<number>(0);
 
   async function getMe() {
     try {
@@ -95,21 +98,31 @@ const App: React.FC = () => {
 
   const [name, setName] = useState("<username>");
 
-  const handleButtonClick = () => {
-    slider.current?.slideNext();
+  const handleButtonClick = async () => {
+    await slider.current?.lockSwipes(false)
+    await slider.current?.slideNext();
+    setScore(score + 1);
+    await slider.current?.lockSwipes(true)
   };
-
+  const handleSlidesLoad = () => {
+    if (slider.current != null)
+      slider.current.lockSwipes(true)
+  }
   return (
-    <IonApp>
-      <IonRouterOutlet>
-        <Router>
-          <Route path="/ranking" component={Leaderboard} exact={true} />
-          <Route exact path="/" component={Announcements} render={() => <Redirect to="/" />} />
-          <Route exact path="/announcements" render={() => <Redirect to="/" />} />
-        </Router>
-      </IonRouterOutlet>
-    </IonApp>
+    <IonContent>
+      <IonSlides onIonSlidesDidLoad={() => handleSlidesLoad()} options={slideOpts} ref={slider}>
+        {pics.slice(1).map((src: string, i: number) => <IonSlide key={`${i}`}>
+          <IonContent>
+            <img src={i > 0 ? pics[i - 1] : pics[0]} onClick={handleButtonClick} />
+            <IonNote color="primary">Score {score}</IonNote><br />
+            <IonButton color="light" >What is more</IonButton>
+            <img src={src} onClick={handleButtonClick} />
+          </IonContent>
+        </IonSlide>
+        )}
+      </IonSlides>
+    </IonContent>
   );
 };
 
-export default App;
+export default Announcements;

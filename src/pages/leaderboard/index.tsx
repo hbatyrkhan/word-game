@@ -1,17 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import aituBridge from "@btsd/aitu-bridge";
 import {
-  IonApp,
-  IonRouterOutlet,
-  IonButton,
-  IonText
+  IonCard,
+  IonContent,
+  IonCardContent
 } from "@ionic/react";
 
-import { Route, Redirect, BrowserRouter as Router } from "react-router-dom";
-
-import Leaderboard from "./pages/leaderboard";
-
-import "./App.css";
+import "../../App.css";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -30,8 +25,7 @@ import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 
 /* Theme variables */
-import "./theme/variables.css";
-import Announcements from "./pages/announcements";
+import "../../theme/variables.css";
 
 interface ISlideContentProps {
   title: string;
@@ -41,34 +35,7 @@ interface ISlideContentProps {
   imgSrc: string;
 }
 
-const SlideContent: React.FC<ISlideContentProps> = ({
-  onClick,
-  title,
-  description,
-  buttonTitle,
-  imgSrc,
-}) => {
-  return (
-    <>
-      <img src={imgSrc} />
-      <div className="slide-block">
-        <IonText color="dark">
-          <h2>{title}</h2>
-        </IonText>
-        <IonText>
-          <sub>{description}</sub>
-        </IonText>
-      </div>
-      <div className="slide-button">
-        <IonButton expand="full" onClick={onClick}>
-          {buttonTitle}
-        </IonButton>
-      </div>
-    </>
-  );
-};
-
-const App: React.FC = () => {
+const Leaderboard: React.FC = () => {
   // Optional parameters to pass to the swiper instance.
   // See http://idangero.us/swiper/api/ for valid options.
   const slideOpts = {
@@ -98,18 +65,26 @@ const App: React.FC = () => {
   const handleButtonClick = () => {
     slider.current?.slideNext();
   };
-
+  const items = [{
+    text: "Top 1"
+  },
+  {
+    text: "Top 2"
+  },
+  {
+    text: "Top 3"
+  }];
   return (
-    <IonApp>
-      <IonRouterOutlet>
-        <Router>
-          <Route path="/ranking" component={Leaderboard} exact={true} />
-          <Route exact path="/" component={Announcements} render={() => <Redirect to="/" />} />
-          <Route exact path="/announcements" render={() => <Redirect to="/" />} />
-        </Router>
-      </IonRouterOutlet>
-    </IonApp>
+    <IonContent>
+      <IonCard>
+        {items.map((item, i: number) => {
+          return <IonCardContent key={`${i}`}>
+            {i + ' ' + item.text}
+          </IonCardContent>
+        })}
+      </IonCard>
+    </IonContent>
   );
 };
 
-export default App;
+export default Leaderboard;
