@@ -31,6 +31,7 @@ import "@ionic/react/css/text-transformation.css";
 import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 
+
 /* Theme variables */
 import "../../theme/variables.css";
 
@@ -175,28 +176,39 @@ const Announcements = (props) => {
   if (redirect)
     return <Redirect to="/ranking" />
   return (
-    <IonContent>
+    <IonContent >
       <IonLoading
         isOpen={showLoading}
         onDidDismiss={() => setShowLoading(false)}
         message={'Please wait...'}
         duration={1100}
       />
-      <IonSlides onIonSlidesDidLoad={() => handleSlidesLoad()} options={slideOpts} ref={slider}>
+      <IonSlides class="display" onIonSlidesDidLoad={() => handleSlidesLoad()} options={slideOpts} ref={slider}>
         {myData.questions.slice(1).map((src, i) => <IonSlide key={`${i}`}>
-          <IonContent>
-            <IonImg src={myData.questions[i].src} onClick={() => handleButtonClick(i, 'top')} />
-            <IonNote color="danger">{myData.questions[i].title}</IonNote><br />
-            <IonNote color="primary">Какое из этих значении больше?</IonNote><br />
-            <IonNote color="warning">{src.title}</IonNote><br />
-            <IonToast
+          <div class="heading">
+            <p>
+              Что больше?
+            </p>
+          </div>
+          <IonContent class="row">
+            <div class="column">
+            <IonImg class="image" src={myData.questions[i].src} onClick={() => handleButtonClick(i, 'top')} />
+            <IonNote class="name_category">{myData.questions[i].title}</IonNote><br />
+            </div>
+            <div>
+              <p>    </p>
+            </div>
+            <IonToast class="toast"
               isOpen={showToast}
               onDidDismiss={() => setShowToast(false)}
               message={"Your score is " + score}
               duration={1000}
               position="middle"
             />
-            <IonImg src={myData.questions[i + 1].src} onClick={() => handleButtonClick(i, 'bot')} />
+            <div class="column">
+            <IonImg class="image" src={myData.questions[i + 1].src} onClick={() => handleButtonClick(i, 'bot')} />
+            <IonNote class="name_category">{src.title}</IonNote><br />
+            </div>
           </IonContent>
         </IonSlide>
         )}
