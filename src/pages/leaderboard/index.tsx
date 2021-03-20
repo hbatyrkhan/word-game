@@ -22,8 +22,12 @@ const loadFirebase = async () => {
   return db.collection('users_aitu')
     .get()
     .then(querySnapshot => {
-      if (general.length != 0)
-        return generalEls;
+      general = [];
+      generalEls = [];
+      science = [];
+      scienceEls = [];
+      pop = [];
+      popEls = [];
       const documents = querySnapshot.docs.map(doc => doc.data())
       for (let i = 0; i<documents.length; i++){
         const categories = documents[i].categories;
