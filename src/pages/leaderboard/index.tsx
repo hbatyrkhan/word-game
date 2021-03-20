@@ -1,7 +1,7 @@
-import aituBridge from "@btsd/aitu-bridge";
+import { useEffect, useState } from "react";
 import BoardRow from "./BoardRow";
-import categoryChanger from "./categoryChanger";
 import iconWrapper from "./iconWrapper";
+import {firebase_app} from "../../config"
 
 function compareRows(a:{name: string, score: number}, b:{name: string, score: number}){
   if (a.score === b.score)
@@ -9,20 +9,73 @@ function compareRows(a:{name: string, score: number}, b:{name: string, score: nu
   return a.score - b.score;
 }
 
+let general:any = [];
+let science:any = [];
+let pop:any = [];
+let generalEls:any = [];
+let scienceEls:any = [];
+let popEls:any = [];
+
+const loadFirebase = async () => {
+  const db = firebase_app.firestore();
+  return db.collection('users_aitu')
+    .get()
+    .then(querySnapshot => {
+      const documents = querySnapshot.docs.map(doc => doc.data())
+      for (let i = 0; i<documents.length; i++){
+        const categories = documents[i].categories;
+        const username = documents[i].username;
+        for (let i = 0; i<categories.length; i++){
+          const obj = categories[i];
+          if (obj.category === "general")
+            general.push({name: username, score: obj.score});
+          else if (obj.category === "science")
+            science.push({name: username, score: obj.score});
+          else if (obj.category === "popculture")
+            pop.push({name: username, score: obj.score});
+        }
+      }
+      general.sort(compareRows); general.reverse(compareRows);
+      science.sort(compareRows); science.reverse(compareRows);
+      pop.sort(); pop.reverse();
+      for (let i=0; i<general.length; i++)
+        generalEls.push(BoardRow(general[i].name, i+1, general[i].score));
+      for (let i=0; i<science.length; i++)
+        scienceEls.push(BoardRow(science[i].name, i+1, science[i].score));
+      for (let i=0; i<pop.length; i++)
+        popEls.push(BoardRow(pop[i].name, i+1, pop[i].score));
+      console.log(generalEls)
+      return generalEls;
+    })
+}
+
 const Leaderboard = () => {
-  let rows: {name: string, score: number}[] = [{name: "Alice Houston", score: 280}, {name: "James Adams", score: 250},{name: "Bob Marley", score: 382}, {name: "Daniel Clifford", score: 20},{name: "Virginia Lu", score: 140}, {name: "Dulat Aldazharov", score: 702}]; // This list should be fetched from the db
-  rows.sort(compareRows);
-  rows.reverse();
-  let rowElements:any = [];
-  for (let i = 0; i<rows.length; i++){
-    rowElements.push(BoardRow(rows[i].name, i+1, rows[i].score));
+
+  const [rowElements, setRowElements] = useState([]);
+
+  useEffect(() => {
+    loadFirebase().then((res) => {setRowElements(res); console.log(res)});
+  }, []);
+
+  const resetEls = (sel:string) => {
+    if (sel === "general")
+      setRowElements(generalEls);
+    else if (sel === "science")
+      setRowElements(scienceEls);
+    else
+      setRowElements(popEls);
   }
+
   const iconWr = iconWrapper();
-  const selector = categoryChanger();
   return (
     <div className = "board">
       {iconWr}
-      {selector}
+      <select id = "changer" className = "category-changer" onChange = {(e) => {
+        resetEls(e.target.value)}}>
+        <option value="general" className = "category-button">Общий</option>
+        <option value="science" className = "category-button">Наука</option>
+        <option value="popculture" className = "category-button">Поп-культура</option>
+      </select>
       {rowElements}</div>
     )
 }

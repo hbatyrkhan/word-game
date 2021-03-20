@@ -32,7 +32,8 @@ import "@ionic/react/css/display.css";
 
 /* Theme variables */
 import "./theme/variables.css";
-import Announcements from "./pages/announcements";
+import Announcements from "./pages/announcements/index.js";
+import MainPage from "./pages/main/index.js";
 
 interface ISlideContentProps {
   title: string;
@@ -105,8 +106,8 @@ const App: React.FC = () => {
       <IonRouterOutlet>
         <Router>
           <Route path="/ranking" component={Leaderboard} exact={true} />
-          <Route exact path="/" component={Announcements} render={() => <Redirect to="/" />} />
-          <Route exact path="/announcements" render={() => <Redirect to="/" />} />
+          <Route exact path="/game/:category" component={Announcements} />
+          <Route exact path="/" component={MainPage} />
         </Router>
       </IonRouterOutlet>
     </IonApp>
