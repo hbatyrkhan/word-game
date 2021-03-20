@@ -13,6 +13,7 @@ import {
 
 import { firebase_app } from "../../config";
 import { loadData, setData } from "../../api";
+import { makeStyles } from '@material-ui/core/styles';
 
 import "../../App.css";
 
@@ -72,7 +73,30 @@ import { Redirect, useParams } from "react-router";
 //     </>
 //   );
 // };
+const useStyles = makeStyles({
+  clickable: {
+    cursor: 'pointer',
+    filter: 'brightness(50%)'
+  },
+  container: {
+    position: 'relative',
+    width: '100%'
+  },
+  img: {
+    width: '100%',
+    height: 'auto',
+  },
+  text: {
+    fontSize: '6vh', 
+    fontWeight: 'bold',
+    position: 'absolute',
+    top: '50%',
+    left: '35%',
+    color: 'white'
+  }
+});
 const Announcements = (props) => {
+  const classes = useStyles();
   // Optional parameters to pass to the swiper instance.
   // See http://idangero.us/swiper/api/ for valid options.
   let { category } = useParams();
@@ -185,18 +209,23 @@ const Announcements = (props) => {
       <IonSlides onIonSlidesDidLoad={() => handleSlidesLoad()} options={slideOpts} ref={slider}>
         {myData.questions.slice(1).map((src, i) => <IonSlide key={`${i}`}>
           <IonContent>
-            <IonImg src={myData.questions[i].src} onClick={() => handleButtonClick(i, 'top')} />
-            <IonNote color="danger">{myData.questions[i].title}</IonNote><br />
-            <IonNote color="primary">Какое из этих значении больше?</IonNote><br />
-            <IonNote color="warning">{src.title}</IonNote><br />
-            <IonToast
+          <IonToast
               isOpen={showToast}
               onDidDismiss={() => setShowToast(false)}
               message={"Your score is " + score}
               duration={1000}
               position="middle"
             />
-            <IonImg src={myData.questions[i + 1].src} onClick={() => handleButtonClick(i, 'bot')} />
+            <div className={classes.container}>
+              <IonImg className={`${classes.clickable} + ${classes.img}`} src={myData.questions[i].src} onClick={() => handleButtonClick(i, 'top')} />
+              <IonNote className={classes.text} color="danger">{myData.questions[i].title}</IonNote><br />
+            </div>
+            <IonNote style={{fontSize: '4vh', fontWeight: 'bold'}} color="primary">Какое из этих значении больше?</IonNote><br />
+            <div className={classes.container}>
+            <IonImg className={`${classes.clickable} + ${classes.img}`} src={myData.questions[i + 1].src} onClick={() => handleButtonClick(i, 'bot')} />
+            <IonNote className={classes.text} color="warning">{src.title}</IonNote><br />
+
+            </div>
           </IonContent>
         </IonSlide>
         )}

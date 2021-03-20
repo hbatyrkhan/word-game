@@ -94,15 +94,14 @@ const MainPage = (props) => {
 	const [name, setName] = useState("<username>");
 
 	return (
-		<IonContent>
-			<IonList>
+		<IonContent class="main_page">
+			<IonList class="main_page">
 				<IonListHeader>
-					<IonLabel>
+					<IonLabel class="heading_of_main" id="heading">
 						Кто больше, что меньше?
             </IonLabel>
 				</IonListHeader>
-
-				<IonItem>
+				<IonItem id="category">
 					<IonLabel>Категория</IonLabel>
 					<IonSelect value={category} placeholder="Выберите категорию" onIonChange={e => setCategory(e.detail.value)}>
 						<IonSelectOption value="general">Общий</IonSelectOption>
@@ -111,9 +110,9 @@ const MainPage = (props) => {
 					</IonSelect>
 				</IonItem>
 			</IonList>
-			<IonButton color="warning">
+			<IonButton color="warning" class="start">
 				<Link to={"/game/" + category}>
-					Начать
+					<p>Начать Игру</p>
 				</Link>
 			</IonButton>
 		</IonContent>
