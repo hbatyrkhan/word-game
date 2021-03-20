@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import {Link} from 'react-router-dom';
 import BoardRow from "./BoardRow";
 import iconWrapper from "./iconWrapper";
 import {firebase_app} from "../../config"
@@ -76,7 +77,13 @@ const Leaderboard = () => {
         <option value="science" className = "category-button">Наука</option>
         <option value="popculture" className = "category-button">Поп-культура</option>
       </select>
-      {rowElements}</div>
+      <div className = "rowSet">
+        {rowElements}
+      </div>
+      <Link to='../'>
+        <button className="board-back-button">Back</button>
+      </Link>
+      </div>
     )
 }
 
