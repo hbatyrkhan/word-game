@@ -22,6 +22,8 @@ const loadFirebase = async () => {
   return db.collection('users_aitu')
     .get()
     .then(querySnapshot => {
+      if (general.length != 0)
+        return generalEls;
       const documents = querySnapshot.docs.map(doc => doc.data())
       for (let i = 0; i<documents.length; i++){
         const categories = documents[i].categories;
@@ -38,7 +40,7 @@ const loadFirebase = async () => {
       }
       general.sort(compareRows); general.reverse(compareRows);
       science.sort(compareRows); science.reverse(compareRows);
-      pop.sort(); pop.reverse();
+      pop.sort(compareRows); pop.reverse(compareRows);
       for (let i=0; i<general.length; i++)
         generalEls.push(BoardRow(general[i].name, i+1, general[i].score));
       for (let i=0; i<science.length; i++)
