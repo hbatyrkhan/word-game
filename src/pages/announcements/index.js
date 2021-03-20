@@ -12,6 +12,7 @@ import {
 } from "@ionic/react";
 
 import { firebase_app } from "../../config";
+import { loadData, setData } from "../../api";
 
 import "../../App.css";
 
@@ -122,21 +123,20 @@ const Announcements = (props) => {
     setShowToast(true);
     if (!add || end) {
       setShowLoading(true);
-      await handleFinish();
+      await handleFinish(score + add)
       return;
     }
     await slider.current?.slideNext();
     await slider.current?.lockSwipes(true)
   };
-  const handleFinish = async () => {
+  const handleFinish = async (fscore) => {
     await getMe();
     if (name !== '<username>') {
-      const db = firebase_app.firestore();
-      const doc = await db.collection('users_aitu').doc(name).get()
+      const doc = await loadData(name);
       const tempScore = {
-        'general': (category === 'general' ? score : 0),
-        'science': (category === 'science' ? score : 0),
-        'popculture': (category === 'popculture' ? score : 0)
+        'general': (category === 'general' ? fscore : 0),
+        'science': (category === 'science' ? fscore : 0),
+        'popculture': (category === 'popculture' ? fscore : 0)
       }
       const data = {
         'username': name,
@@ -161,9 +161,9 @@ const Announcements = (props) => {
           let curScore = tempScore[fData['categories'][i]['category']];
           fData['categories'][i]['score'] = Math.max(curScore, fData['categories'][i]['score']);
         }
-        await db.collection('users_aitu').doc(name).set(fData);
+        await setData(name, fData);
       } else {
-        await db.collection('users_aitu').doc(name).set(data);
+        await setData(name, data);
       }
       setRedirect(true);
     }
