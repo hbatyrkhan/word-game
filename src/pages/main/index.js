@@ -114,11 +114,16 @@ const MainPage = (props) => {
 					</IonSelect>
 				</IonItem>
 			</IonList>
-			<IonButton color="warning">
-				<Link to={"/game/" + category}>
+			<Link to={"/game/" + category}>
+				<IonButton color="warning">
 					Начать
-				</Link>
 			</IonButton>
+			</Link>
+			<Link to={"/ranking"}>
+				<IonButton color="success">
+					Лидерборд
+			</IonButton>
+			</Link>
 		</IonContent>
 	);
 };
