@@ -12,6 +12,7 @@ import { Route, Redirect, BrowserRouter as Router } from "react-router-dom";
 import Leaderboard from "./pages/leaderboard";
 
 import "./App.css";
+import "./pages/leaderboard/leaderboard-style.css";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
