@@ -9,6 +9,7 @@ http://docs.aitu.io/
 ## Установка
 
 ```bash
+
 npm install
 npm run start
 ```
