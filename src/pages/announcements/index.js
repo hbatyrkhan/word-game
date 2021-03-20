@@ -8,7 +8,8 @@ import {
   IonLoading,
   IonNote,
   IonToast,
-  IonImg
+  IonImg,
+  IonAlert
 } from "@ionic/react";
 
 import { firebase_app } from "../../config";
@@ -37,6 +38,7 @@ import "../../theme/variables.css";
 
 import { data } from "../../dummy";
 import { Redirect, useParams } from "react-router";
+import { get } from "http";
 
 // interface ISlideContentProps {
 //   title: string;
@@ -89,10 +91,15 @@ const Announcements = (props) => {
   const [score, setScore] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [redirect, setRedirect] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [lives, setLives] = useState(-1);
 
   async function getMe() {
     try {
-      const data = await aituBridge.getMe();
+      console.log('Loading')
+      const data = { name: 'Khafiz' }// await aituBridge.getMe();
+      const doc = await loadData(data.name)
+      setLives(doc.data().lives);
       setName(data.name);
     } catch (e) {
       // handle error
@@ -100,9 +107,7 @@ const Announcements = (props) => {
     }
   }
   useEffect(() => {
-    if (aituBridge.isSupported()) {
-      getMe();
-    }
+    getMe();
   }, []);
 
   const [name, setName] = useState("<username>");
@@ -120,17 +125,23 @@ const Announcements = (props) => {
       add = 1;
     const end = await slider.current.isEnd();
     setScore(score + add);
-    setShowToast(true);
-    if (!add || end) {
-      setShowLoading(true);
+    if (end || (!add && lives < 1)) {
+      setShowToast(true);
       await handleFinish(score + add)
       return;
     }
+    if (!add) {
+      saveLife();
+      return;
+    }
+    setShowToast(true);
     await slider.current?.slideNext();
     await slider.current?.lockSwipes(true)
   };
+  const saveLife = () => {
+    setShowAlert(true);
+  }
   const handleFinish = async (fscore) => {
-    await getMe();
     if (name !== '<username>') {
       const doc = await loadData(name);
       const tempScore = {
@@ -138,6 +149,7 @@ const Announcements = (props) => {
         'science': (category === 'science' ? fscore : 0),
         'popculture': (category === 'popculture' ? fscore : 0)
       }
+      console.log(lives);
       const data = {
         'username': name,
         'categories': [
@@ -153,7 +165,8 @@ const Announcements = (props) => {
             'category': 'popculture',
             'score': tempScore['popculture']
           }
-        ]
+        ],
+        'lives': lives
       }
       if (doc.exists) {
         const fData = doc.data()
@@ -161,6 +174,7 @@ const Announcements = (props) => {
           let curScore = tempScore[fData['categories'][i]['category']];
           fData['categories'][i]['score'] = Math.max(curScore, fData['categories'][i]['score']);
         }
+        fData['lives'] = data['lives'];
         await setData(name, fData);
       } else {
         await setData(name, data);
@@ -176,11 +190,39 @@ const Announcements = (props) => {
     return <Redirect to="/ranking" />
   return (
     <IonContent>
+      <IonAlert
+        isOpen={showAlert}
+        onDidDismiss={() => setShowAlert(false)}
+        header={'Хотите использовать жизнь?'}
+        message={`У вас <strong>${lives}</strong> жизней!!!`}
+        buttons={[
+          {
+            text: 'Отмена',
+            role: 'cancel',
+            cssClass: 'secondary',
+            handler: async (blah) => {
+              setShowToast(true);
+              setShowLoading(true);
+              await handleFinish(score);
+            }
+          },
+          {
+            text: 'Использовать',
+            handler: async () => {
+              let cLives = lives;
+              cLives--;
+              setLives(cLives);
+              await slider.current?.slideNext();
+              await slider.current?.lockSwipes(true)
+            }
+          }
+        ]}
+      />
       <IonLoading
-        isOpen={showLoading}
+        isOpen={showLoading || lives === -1}
         onDidDismiss={() => setShowLoading(false)}
         message={'Please wait...'}
-        duration={1100}
+        duration={1000}
       />
       <IonSlides onIonSlidesDidLoad={() => handleSlidesLoad()} options={slideOpts} ref={slider}>
         {myData.questions.slice(1).map((src, i) => <IonSlide key={`${i}`}>

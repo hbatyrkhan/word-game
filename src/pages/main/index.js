@@ -9,7 +9,9 @@ import {
 	IonListHeader,
 	IonSelect,
 	IonImg,
-	IonButton
+	IonButton,
+	IonModal,
+	IonAlert
 } from "@ionic/react";
 
 import { firebase_app } from "../../config";
@@ -92,6 +94,7 @@ const MainPage = (props) => {
 	}, []);
 
 	const [name, setName] = useState("<username>");
+	const [showModal, setShowModal] = useState(false);
 
 	return (
 		<IonContent>
