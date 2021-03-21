@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import aituBridge from "@btsd/aitu-bridge";
 import data from '../../dummy';
 import { Redirect, useParams } from "react-router";
+import { IonAlert, IonLoading } from "@ionic/react";
+import { loadData, setData } from "../../api.js";
 
 const Announcements = (props) => {
   // Optional parameters to pass to the swiper instance.
   // See http://idangero.us/swiper/api/ for valid options.
   let { category } = useParams();
   let myData = [];
-  for (let i=0; i<data.length; i++){
+  for (let i = 0; i < data.length; i++) {
     if (data[i].category === category)
       myData = data[i].questions;
   }
@@ -26,97 +28,210 @@ const Announcements = (props) => {
   const [topOp, setTopOp] = useState("0%");
   const [botOp, setBotOp] = useState("0%");
   const [cnt, setCnt] = useState(0);
+  const [lives, setLives] = useState(-1);
+  const [name, setName] = useState('<username>');
+  const [redirect, setRedirect] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+
+  async function getMe() {
+    try {
+      console.log('Loading')
+      const data = await aituBridge.getMe();
+      const doc = await loadData(data.name)
+      setLives(doc.data().lives);
+      setName(data.name);
+    } catch (e) {
+      // handle error
+      console.log(e);
+    }
+  }
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  const handleLoss = ()=>{
-
-  } // COMPLETE THIS FUNCTION
-
-  const handleClick = async (choice) => {
-    if (cnt === 0){
-      let topObj, botObj;
-      if (myData[index].src === topImg){
-        topObj = myData[index];
-        botObj = myData[index-1];
+  const handleLoss = async (alerted = false) => {
+    console.log("Loss")
+    if (!alerted && lives > 0 && index + 1 < myData.length) {
+      setShowAlert(true);
+    } else if (name !== '<username>') {
+      const doc = await loadData(name);
+      const tempScore = {
+        'general': (category === 'general' ? score : 0),
+        'science': (category === 'science' ? score : 0),
+        'popculture': (category === 'popculture' ? score : 0)
       }
-      else{
-        topObj = myData[index-1];
-        botObj = myData[index];
+      console.log(lives);
+      const data = {
+        'username': name,
+        'categories': [
+          {
+            'category': 'general',
+            'score': tempScore['general']
+          },
+          {
+            'category': 'science',
+            'score': tempScore['science']
+          },
+          {
+            'category': 'popculture',
+            'score': tempScore['popculture']
+          }
+        ],
+        'lives': lives
       }
-      setCnt(cnt => cnt+1);
-      setBotOp("100%");
-      setTopOp("100%");
-      if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value))
-        setScore(score => score+1);
-      else{
-        handleLoss();
+      if (doc.exists) {
+        const fData = doc.data()
+        for (let i = 0; i < 3; i++) {
+          let curScore = tempScore[fData['categories'][i]['category']];
+          fData['categories'][i]['score'] = Math.max(curScore, fData['categories'][i]['score']);
+        }
+        fData['lives'] = data['lives'];
+        await setData(name, fData);
+      } else {
+        await setData(name, data);
       }
-      return;
-    }
-    setCnt(cnt => cnt-1);
-    setBotOp("0%");
-    setTopOp("0%");
-    await sleep(2000);
-    let topObj, botObj, changeTop;
-    if (myData[index].src === topImg){
-      topObj = myData[index];
-      botObj = myData[index-1];
-      changeTop = false;
-    }
-    else{
-      topObj = myData[index-1];
-      botObj = myData[index];
-      changeTop = true;
-    }
-    if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value)){
-      setIndex(index => index+1);
-      if (topTop === 0){
-        setTopTop(50);
-        setBotTop(0);
-      }
-      else{
-        setTopTop(0);
-        setBotTop(50);
-      }
-      if (!changeTop){
-        setBotTitle(myData[index+1].title);
-        setBotImg(myData[index+1].src);
-        setBotAns(myData[index+1].value);
-        setTopOp("100%");
-      }
-      else{
-        setTopTitle(myData[index+1].title);
-        setTopImg(myData[index+1].src);
-        setTopAns(myData[index+1].value);
-        setBotOp("100%");
-      }
-    }
-    else{
-      handleLoss();
+      setRedirect(true);
     }
   }
 
-  useEffect(()=>{
+  const handleClick = async (choice) => {
+    if (cnt === 0) {
+      let topObj, botObj;
+      if (myData[index].src === topImg) {
+        topObj = myData[index];
+        botObj = myData[index - 1];
+      }
+      else {
+        topObj = myData[index - 1];
+        botObj = myData[index];
+      }
+      setCnt(cnt => cnt + 1);
+      setBotOp("100%");
+      setTopOp("100%");
+      if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value))
+        setScore(score => score + 1);
+      else {
+        await handleLoss();
+        return;
+      }
+      // return;
+    }
+    setCnt(cnt => cnt - 1);
+    setBotOp("0%");
+    setTopOp("0%");
+    await sleep(1000);
+    let topObj, botObj, changeTop;
+    if (myData[index].src === topImg) {
+      topObj = myData[index];
+      botObj = myData[index - 1];
+      changeTop = false;
+    }
+    else {
+      topObj = myData[index - 1];
+      botObj = myData[index];
+      changeTop = true;
+    }
+    if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value)) {
+      if (index === myData.length) {
+        handleLoss();
+        return;
+      }
+      await animate();
+    }
+    else {
+      await handleLoss();
+    }
+  }
+  const animate = async () => {
+    if (index + 1 == myData.length) {
+      await handleLoss();
+      return;
+    }
+    let changeTop;
+    if (myData[index].src === topImg) {
+      changeTop = false;
+    }
+    else {
+      changeTop = true;
+    }
+    setIndex(index => index + 1);
+    if (topTop === 0) {
+      setTopTop(50);
+      setBotTop(0);
+    }
+    else {
+      setTopTop(0);
+      setBotTop(50);
+    }
+    if (!changeTop) {
+      setBotTitle(myData[index + 1].title);
+      setBotImg(myData[index + 1].src);
+      setBotAns(myData[index + 1].value);
+      setTopOp("100%");
+    }
+    else {
+      setTopTitle(myData[index + 1].title);
+      setTopImg(myData[index + 1].src);
+      setTopAns(myData[index + 1].value);
+      setBotOp("100%");
+    }
+  }
+  useEffect(() => {
     setIndex(1);
     setScore(0);
     setTopImg(myData[0].src);
     setBotImg(myData[1].src);
     setTopTitle(myData[0].title);
     setBotTitle(myData[1].title);
+    getMe();
   }, []);
 
+  if (redirect)
+    return <Redirect to="/ranking" />
+
   return (
-    <div className = "announcements">
-      <img style={{top: topTop+"%"}} onClick = {() => {handleClick("top")}} className = "gameImg-top" src={topImg}/>
-      <div style={{top: (topTop+22)+"%"}} className = "topTitle" onClick = {() => {handleClick("top")}}>{topTitle}</div>
-      <div style={{top: (topTop+35)+"%", opacity: topOp}} onClick = {() => {handleClick("top")}} className = "topAns">{topAns.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
-      <div className = "betweener">Что больше? Score: {score}</div>
-      <img style={{top: (botTop)+"%"}} onClick = {() => {handleClick("bot")}} className = "gameImg-bot" src={botImg}/>
-      <div style={{top: (botTop+22)+"%"}} onClick = {() => {handleClick("bot")}} className = "botTitle">{botTitle}</div>
-      <div style={{top: (botTop+35)+"%", opacity: botOp}} onClick = {() => {handleClick("bot")}} className = "botAns">{botAns.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+    <div className="announcements">
+      <IonAlert
+        isOpen={showAlert}
+        onDidDismiss={() => setShowAlert(false)}
+        header={'Хотите использовать жизнь?'}
+        message={`У вас <strong>${lives}</strong> жизней!!!`}
+        buttons={[
+          {
+            text: 'Отмена',
+            role: 'cancel',
+            cssClass: 'secondary',
+            handler: async (blah) => {
+              await handleLoss(true);
+            }
+          },
+          {
+            text: 'Использовать',
+            handler: async () => {
+              let cLives = lives;
+              cLives--;
+              setLives(cLives);
+              setBotOp("0%");
+              setTopOp("0%");
+              await animate();
+            }
+          }
+        ]}
+      />
+      <IonLoading
+        isOpen={lives === -1}
+        onDidDismiss={() => { }}
+        message={'Подождите...'}
+      // duration={1000}
+      />
+      <img style={{ top: topTop + "%" }} onClick={() => { handleClick("top") }} className="gameImg-top" src={topImg} />
+      <div style={{ top: (topTop + 22) + "%" }} className="topTitle" onClick={() => { handleClick("top") }}>{topTitle}</div>
+      <div style={{ top: (topTop + 35) + "%", opacity: topOp }} onClick={() => { handleClick("top") }} className="topAns">{topAns.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+      <div className="betweener">Что больше? Score: {score}</div>
+      <img style={{ top: (botTop) + "%" }} onClick={() => { handleClick("bot") }} className="gameImg-bot" src={botImg} />
+      <div style={{ top: (botTop + 22) + "%" }} onClick={() => { handleClick("bot") }} className="botTitle">{botTitle}</div>
+      <div style={{ top: (botTop + 35) + "%", opacity: botOp }} onClick={() => { handleClick("bot") }} className="botAns">{botAns.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
     </div>
   )
 
