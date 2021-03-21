@@ -50,18 +50,17 @@ const Announcements = (props) => {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  const handleLoss = async (alerted = false) => {
-    console.log("Loss")
+  const handleLoss = async (fscore = -1, alerted = false) => {
+    fscore = Math.max(fscore, score);
     if (!alerted && lives > 0 && index + 1 < myData.length) {
       setShowAlert(true);
     } else if (name !== '<username>') {
       const doc = await loadData(name);
       const tempScore = {
-        'general': (category === 'general' ? score : 0),
-        'science': (category === 'science' ? score : 0),
-        'popculture': (category === 'popculture' ? score : 0)
+        'general': (category === 'general' ? fscore : 0),
+        'science': (category === 'science' ? fscore : 0),
+        'popculture': (category === 'popculture' ? fscore : 0)
       }
-      console.log(lives);
       const data = {
         'username': name,
         'categories': [
@@ -96,6 +95,7 @@ const Announcements = (props) => {
   }
 
   const handleClick = async (choice) => {
+    let fscore = score;
     if (cnt === 0) {
       let topObj, botObj;
       if (myData[index].src === topImg) {
@@ -109,9 +109,12 @@ const Announcements = (props) => {
       setCnt(cnt => cnt + 1);
       setBotOp("100%");
       setTopOp("100%");
-      if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value))
+      if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value)) {
         setScore(score => score + 1);
+        fscore++;
+      }
       else {
+        console.log("Loss1")
         await handleLoss();
         return;
       }
@@ -120,7 +123,7 @@ const Announcements = (props) => {
     setCnt(cnt => cnt - 1);
     setBotOp("0%");
     setTopOp("0%");
-    await sleep(1000);
+    await sleep(800);
     let topObj, botObj, changeTop;
     if (myData[index].src === topImg) {
       topObj = myData[index];
@@ -137,15 +140,15 @@ const Announcements = (props) => {
         handleLoss();
         return;
       }
-      await animate();
+      await animate(fscore);
     }
     else {
       await handleLoss();
     }
   }
-  const animate = async () => {
+  const animate = async (fscore = -1) => {
     if (index + 1 == myData.length) {
-      await handleLoss();
+      await handleLoss(fscore);
       return;
     }
     let changeTop;
@@ -203,7 +206,7 @@ const Announcements = (props) => {
             role: 'cancel',
             cssClass: 'secondary',
             handler: async (blah) => {
-              await handleLoss(true);
+              await handleLoss(score, true);
             }
           },
           {
