@@ -227,7 +227,7 @@ const Announcements = (props) => {
         ]}
       />
       <IonLoading
-        isOpen={lives === -1 || loading}
+        isOpen={lives === -1}
         onDidDismiss={() => { }}
         message={'Подождите...'}
       // duration={1000}
