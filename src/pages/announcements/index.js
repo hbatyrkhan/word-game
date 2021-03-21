@@ -40,9 +40,10 @@ const Announcements = (props) => {
       const data = await aituBridge.getMe();
       const doc = await loadData(data.name)
       let life;
-      if (doc.exists())
+      if (doc.exists)
         life = doc.data().lives;
       else life = 3;
+      console.log(life);
       setLives();
       setName(data.name);
     } catch (e) {
