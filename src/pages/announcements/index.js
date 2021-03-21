@@ -32,11 +32,12 @@ const Announcements = (props) => {
   const [name, setName] = useState('<username>');
   const [redirect, setRedirect] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function getMe() {
     try {
       console.log('Loading')
-      const data = await aituBridge.getMe();
+      const data = { name: 'Khafiz' } // await aituBridge.getMe();
       const doc = await loadData(data.name)
       setLives(doc.data().lives);
       setName(data.name);
@@ -95,6 +96,7 @@ const Announcements = (props) => {
   }
 
   const handleClick = async (choice) => {
+    setLoading(true);
     let fscore = score;
     if (cnt === 0) {
       let topObj, botObj;
@@ -106,21 +108,21 @@ const Announcements = (props) => {
         topObj = myData[index - 1];
         botObj = myData[index];
       }
-      setCnt(cnt => cnt + 1);
+      // setCnt(cnt => cnt + 1);
       setBotOp("100%");
       setTopOp("100%");
       if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value)) {
-        setScore(score => score + 1);
+        setScore(score + 1);
         fscore++;
       }
       else {
-        console.log("Loss1")
+        setLoading(false);
         await handleLoss();
         return;
       }
       // return;
     }
-    setCnt(cnt => cnt - 1);
+    // setCnt(cnt => cnt - 1);
     setBotOp("0%");
     setTopOp("0%");
     await sleep(800);
@@ -137,7 +139,8 @@ const Announcements = (props) => {
     }
     if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value)) {
       if (index === myData.length) {
-        handleLoss();
+        setLoading(false);
+        await handleLoss();
         return;
       }
       await animate(fscore);
@@ -145,6 +148,7 @@ const Announcements = (props) => {
     else {
       await handleLoss();
     }
+    setLoading(false);
   }
   const animate = async (fscore = -1) => {
     if (index + 1 == myData.length) {
@@ -223,7 +227,7 @@ const Announcements = (props) => {
         ]}
       />
       <IonLoading
-        isOpen={lives === -1}
+        isOpen={lives === -1 || loading}
         onDidDismiss={() => { }}
         message={'Подождите...'}
       // duration={1000}
