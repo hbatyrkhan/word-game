@@ -39,7 +39,11 @@ const Announcements = (props) => {
       console.log('Loading')
       const data = await aituBridge.getMe();
       const doc = await loadData(data.name)
-      setLives(doc.data().lives);
+      let life;
+      if (doc.exists())
+        life = doc.data().lives;
+      else life = 3;
+      setLives();
       setName(data.name);
     } catch (e) {
       // handle error
