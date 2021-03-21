@@ -37,7 +37,7 @@ const Announcements = (props) => {
   async function getMe() {
     try {
       console.log('Loading')
-      const data = { name: 'Khafiz' } // await aituBridge.getMe();
+      const data = await aituBridge.getMe();
       const doc = await loadData(data.name)
       setLives(doc.data().lives);
       setName(data.name);
