@@ -43,8 +43,7 @@ const Announcements = (props) => {
       if (doc.exists)
         life = doc.data().lives;
       else life = 3;
-      console.log(life);
-      setLives();
+      setLives(life);
       setName(data.name);
     } catch (e) {
       // handle error
