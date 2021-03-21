@@ -95,7 +95,7 @@ const MainPage = (props) => {
 
 	const [name, setName] = useState("<username>");
 	const [showModal, setShowModal] = useState(false);
-
+/*
 	return (
 		<IonContent>
 			<IonList>
@@ -114,17 +114,41 @@ const MainPage = (props) => {
 					</IonSelect>
 				</IonItem>
 			</IonList>
-			<Link to={"/game/" + category}>
-				<IonButton color="warning">
-					Начать
-			</IonButton>
-			</Link>
-			<Link to={"/ranking"}>
-				<IonButton color="success">
-					Лидерборд
-			</IonButton>
-			</Link>
+			<div className = "menu-buttons">
+				<Link to={"/game/" + category}>
+					<IonButton color="warning">
+						Начать
+					</IonButton>
+				</Link>
+				<Link to={"/ranking"}>
+					<IonButton color="success">
+						Лидерборд
+					</IonButton>
+				</Link>
+			</div>
 		</IonContent>
+	); */
+	return (
+		<div className="main-menu">
+			<img className = "menu-icon" src = "https://i.ibb.co/ySnTG6p/Chevrons-Down-Double-Arrow-512.png"></img>
+			<select className = "menu-select" value={category} placeholder="Выберите категорию" onChange={e => setCategory(e.target.value)}>
+						<option value="general">Общий</option>
+						<option value="science">Наука</option>
+						<option value="popculture">Попкультура</option>
+			</select>
+			<div className = "menu-button-list">
+				<Link to={"/game/" + category}>
+					<button className = "menu-button">
+						Начать
+					</button>
+				</Link>
+				<Link to={"/ranking"}>
+					<button className = "menu-button">
+						Лидерборд
+					</button>
+				</Link>
+			</div>
+		</div>
 	);
 };
 

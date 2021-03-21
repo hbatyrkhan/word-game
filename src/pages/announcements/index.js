@@ -1,250 +1,125 @@
 import { useEffect, useRef, useState } from "react";
 import aituBridge from "@btsd/aitu-bridge";
-import {
-  IonSlides,
-  IonSlide,
-  IonContent,
-  IonButton,
-  IonLoading,
-  IonNote,
-  IonToast,
-  IonImg,
-  IonAlert
-} from "@ionic/react";
-
-import { firebase_app } from "../../config";
-import { loadData, setData } from "../../api";
-
-import "../../App.css";
-
-/* Core CSS required for Ionic components to work properly */
-import "@ionic/react/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
-import "@ionic/react/css/normalize.css";
-import "@ionic/react/css/structure.css";
-import "@ionic/react/css/typography.css";
-
-/* Optional CSS utils that can be commented out */
-import "@ionic/react/css/padding.css";
-import "@ionic/react/css/float-elements.css";
-import "@ionic/react/css/text-alignment.css";
-import "@ionic/react/css/text-transformation.css";
-import "@ionic/react/css/flex-utils.css";
-import "@ionic/react/css/display.css";
-
-/* Theme variables */
-import "../../theme/variables.css";
-
-import { data } from "../../dummy";
+import data from '../../dummy';
 import { Redirect, useParams } from "react-router";
-import { get } from "http";
 
-// interface ISlideContentProps {
-//   title: string;
-//   onClick: () => void;
-//   description: string;
-//   buttonTitle: string;
-//   imgSrc: string;
-// }
-
-// const SlideContent: React.FC = ({
-//   onClick,
-//   title,
-//   description,
-//   buttonTitle,
-//   imgSrc,
-// }) => {
-//   return (
-//     <>
-//       <img src={imgSrc} />
-//       <div className="slide-block">
-//         <IonText color="dark">
-//           <h2>{title}</h2>
-//         </IonText>
-//         <IonText>
-//           <sub>{description}</sub>
-//         </IonText>
-//       </div>
-//       <div className="slide-button">
-//         <IonButton expand="full" onClick={onClick}>
-//           {buttonTitle}
-//         </IonButton>
-//       </div>
-//     </>
-//   );
-// };
 const Announcements = (props) => {
   // Optional parameters to pass to the swiper instance.
   // See http://idangero.us/swiper/api/ for valid options.
   let { category } = useParams();
-  let myData = data[0];
-  data.forEach(item => {
-    if (item.category === category)
-      myData = item;
-  })
-  const slideOpts = {
-    initialSlide: 0,
-    speed: 1100,
-  };
-  const slider = useRef(null);
-  const [score, setScore] = useState(0);
-  const [showToast, setShowToast] = useState(false);
-  const [redirect, setRedirect] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
-  const [lives, setLives] = useState(-1);
+  let myData = [];
+  for (let i=0; i<data.length; i++){
+    if (data[i].category === category)
+      myData = data[i].questions;
+  }
 
-  async function getMe() {
-    try {
-      console.log('Loading')
-      const data = await aituBridge.getMe();
-      const doc = await loadData(data.name)
-      setLives(doc.data().lives);
-      setName(data.name);
-    } catch (e) {
-      // handle error
-      console.log(e);
+  const [index, setIndex] = useState(1);
+  const [topImg, setTopImg] = useState(myData[0].src);
+  const [botImg, setBotImg] = useState(myData[1].src);
+  const [topTitle, setTopTitle] = useState(myData[0].title);
+  const [botTitle, setBotTitle] = useState(myData[1].title);
+  const [score, setScore] = useState(0);
+  const [topTop, setTopTop] = useState(0);
+  const [botTop, setBotTop] = useState(50);
+  const [topAns, setTopAns] = useState(myData[0].value);
+  const [botAns, setBotAns] = useState(myData[1].value);
+  const [topOp, setTopOp] = useState("0%");
+  const [botOp, setBotOp] = useState("0%");
+  const [cnt, setCnt] = useState(0);
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  const handleLoss = ()=>{
+
+  } // COMPLETE THIS FUNCTION
+
+  const handleClick = async (choice) => {
+    if (cnt === 0){
+      let topObj, botObj;
+      if (myData[index].src === topImg){
+        topObj = myData[index];
+        botObj = myData[index-1];
+      }
+      else{
+        topObj = myData[index-1];
+        botObj = myData[index];
+      }
+      setCnt(cnt => cnt+1);
+      setBotOp("100%");
+      setTopOp("100%");
+      if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value))
+        setScore(score => score+1);
+      else{
+        handleLoss();
+      }
+      return;
+    }
+    setCnt(cnt => cnt-1);
+    setBotOp("0%");
+    setTopOp("0%");
+    await sleep(2000);
+    let topObj, botObj, changeTop;
+    if (myData[index].src === topImg){
+      topObj = myData[index];
+      botObj = myData[index-1];
+      changeTop = false;
+    }
+    else{
+      topObj = myData[index-1];
+      botObj = myData[index];
+      changeTop = true;
+    }
+    if ((choice === "top" && topObj.value > botObj.value) || (choice === "bot" && botObj.value > topObj.value)){
+      setIndex(index => index+1);
+      if (topTop === 0){
+        setTopTop(50);
+        setBotTop(0);
+      }
+      else{
+        setTopTop(0);
+        setBotTop(50);
+      }
+      if (!changeTop){
+        setBotTitle(myData[index+1].title);
+        setBotImg(myData[index+1].src);
+        setBotAns(myData[index+1].value);
+        setTopOp("100%");
+      }
+      else{
+        setTopTitle(myData[index+1].title);
+        setTopImg(myData[index+1].src);
+        setTopAns(myData[index+1].value);
+        setBotOp("100%");
+      }
+    }
+    else{
+      handleLoss();
     }
   }
-  useEffect(() => {
-    getMe();
+
+  useEffect(()=>{
+    setIndex(1);
+    setScore(0);
+    setTopImg(myData[0].src);
+    setBotImg(myData[1].src);
+    setTopTitle(myData[0].title);
+    setBotTitle(myData[1].title);
   }, []);
 
-  const [name, setName] = useState("<username>");
-  const [showLoading, setShowLoading] = useState(false);
-
-  const handleButtonClick = async (index, type) => {
-    if (showToast) return
-    await slider.current?.lockSwipes(false)
-    const top = myData.questions[index].value;
-    const bot = myData.questions[index + 1].value
-    let add = 0;
-    if (type === 'top' && top > bot)
-      add = 1;
-    if (type === 'bot' && top < bot)
-      add = 1;
-    const end = await slider.current.isEnd();
-    setScore(score + add);
-    if (end || (!add && lives < 1)) {
-      setShowToast(true);
-      await handleFinish(score + add)
-      return;
-    }
-    if (!add) {
-      saveLife();
-      return;
-    }
-    setShowToast(true);
-    await slider.current?.slideNext();
-    await slider.current?.lockSwipes(true)
-  };
-  const saveLife = () => {
-    setShowAlert(true);
-  }
-  const handleFinish = async (fscore) => {
-    if (name !== '<username>') {
-      const doc = await loadData(name);
-      const tempScore = {
-        'general': (category === 'general' ? fscore : 0),
-        'science': (category === 'science' ? fscore : 0),
-        'popculture': (category === 'popculture' ? fscore : 0)
-      }
-      console.log(lives);
-      const data = {
-        'username': name,
-        'categories': [
-          {
-            'category': 'general',
-            'score': tempScore['general']
-          },
-          {
-            'category': 'science',
-            'score': tempScore['science']
-          },
-          {
-            'category': 'popculture',
-            'score': tempScore['popculture']
-          }
-        ],
-        'lives': lives
-      }
-      if (doc.exists) {
-        const fData = doc.data()
-        for (let i = 0; i < 3; i++) {
-          let curScore = tempScore[fData['categories'][i]['category']];
-          fData['categories'][i]['score'] = Math.max(curScore, fData['categories'][i]['score']);
-        }
-        fData['lives'] = data['lives'];
-        await setData(name, fData);
-      } else {
-        await setData(name, data);
-      }
-      setRedirect(true);
-    }
-  }
-  const handleSlidesLoad = () => {
-    if (slider.current != null)
-      slider.current.lockSwipes(true)
-  }
-  if (redirect)
-    return <Redirect to="/ranking" />
   return (
-    <IonContent>
-      <IonAlert
-        isOpen={showAlert}
-        onDidDismiss={() => setShowAlert(false)}
-        header={'Хотите использовать жизнь?'}
-        message={`У вас <strong>${lives}</strong> жизней!!!`}
-        buttons={[
-          {
-            text: 'Отмена',
-            role: 'cancel',
-            cssClass: 'secondary',
-            handler: async (blah) => {
-              setShowToast(true);
-              setShowLoading(true);
-              await handleFinish(score);
-            }
-          },
-          {
-            text: 'Использовать',
-            handler: async () => {
-              let cLives = lives;
-              cLives--;
-              setLives(cLives);
-              await slider.current?.slideNext();
-              await slider.current?.lockSwipes(true)
-            }
-          }
-        ]}
-      />
-      <IonLoading
-        isOpen={showLoading || lives === -1}
-        onDidDismiss={() => setShowLoading(false)}
-        message={'Please wait...'}
-        duration={1000}
-      />
-      <IonSlides onIonSlidesDidLoad={() => handleSlidesLoad()} options={slideOpts} ref={slider}>
-        {myData.questions.slice(1).map((src, i) => <IonSlide key={`${i}`}>
-          <IonContent>
-            <IonImg src={myData.questions[i].src} onClick={() => handleButtonClick(i, 'top')} />
-            <IonNote color="danger">{myData.questions[i].title}</IonNote><br />
-            <IonNote color="primary">Какое из этих значении больше?</IonNote><br />
-            <IonNote color="warning">{src.title}</IonNote><br />
-            <IonToast
-              isOpen={showToast}
-              onDidDismiss={() => setShowToast(false)}
-              message={"Your score is " + score}
-              duration={1000}
-              position="middle"
-            />
-            <IonImg src={myData.questions[i + 1].src} onClick={() => handleButtonClick(i, 'bot')} />
-          </IonContent>
-        </IonSlide>
-        )}
-      </IonSlides>
-    </IonContent>
-  );
-};
+    <div className = "announcements">
+      <img style={{top: topTop+"%"}} onClick = {() => {handleClick("top")}} className = "gameImg-top" src={topImg}/>
+      <div style={{top: (topTop+22)+"%"}} className = "topTitle" onClick = {() => {handleClick("top")}}>{topTitle}</div>
+      <div style={{top: (topTop+35)+"%", opacity: topOp}} onClick = {() => {handleClick("top")}} className = "topAns">{topAns.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+      <div className = "betweener">Что больше? Score: {score}</div>
+      <img style={{top: (botTop)+"%"}} onClick = {() => {handleClick("bot")}} className = "gameImg-bot" src={botImg}/>
+      <div style={{top: (botTop+22)+"%"}} onClick = {() => {handleClick("bot")}} className = "botTitle">{botTitle}</div>
+      <div style={{top: (botTop+35)+"%", opacity: botOp}} onClick = {() => {handleClick("bot")}} className = "botAns">{botAns.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+    </div>
+  )
+
+}
 
 export default Announcements;

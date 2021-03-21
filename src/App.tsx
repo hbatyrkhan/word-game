@@ -13,6 +13,8 @@ import Leaderboard from "./pages/leaderboard";
 
 import "./App.css";
 import "./pages/leaderboard/leaderboard-style.css";
+import "./pages/announcements/announcements.css";
+import "./pages/main/main.css";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";

@@ -1,4 +1,4 @@
-export const data = [
+const data = [
 	{
 		"category": "science",
 		"questions":
@@ -33,4 +33,6 @@ export const data = [
 				{ "title": "Секунды в жизни человека", "value": 2200000000, "src": "https://static.scientificamerican.com/sciam/cache/file/046C0442-4DCD-43D3-BAB1E903D8B9EEC2_source.jpg?w=590&h=800&15E43DAE-982D-4EA1-A817CA18F4494BBF" }
 			]
 	}
-]
+];
+
+export default data;
